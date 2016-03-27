@@ -1,0 +1,10 @@
+#[derive(Debug, Deserialize)]
+pub struct Value {
+    pub timestamp: String,
+    pub value: u64
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Metrics {
+    pub metrics: Vec<Value>
+}
