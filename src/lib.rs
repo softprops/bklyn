@@ -23,11 +23,11 @@ use std::io::Read;
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub enum Credentials {
-    Basic(String, String)
+    Basic(String, String),
 }
 
 pub struct Cluster<'a> {
-    heapster: &'a Heapster<'a>
+    heapster: &'a Heapster<'a>,
 }
 
 impl<'a> Cluster<'a> {
@@ -36,7 +36,9 @@ impl<'a> Cluster<'a> {
     }
 
     // todo: support start/end
-    pub fn values<N>(&self, name: N) -> Result<Vec<Value>> where N: Into<String> {
+    pub fn values<N>(&self, name: N) -> Result<Vec<Value>>
+        where N: Into<String>
+    {
         self.heapster.get::<Metrics>(&format!("/metrics/{}", name.into())).map(|m| m.metrics)
     }
 }
@@ -44,7 +46,7 @@ impl<'a> Cluster<'a> {
 pub struct Heapster<'a> {
     baseurl: String,
     credentials: Credentials,
-    client: &'a Client
+    client: &'a Client,
 }
 
 impl<'a> Heapster<'a> {
@@ -54,14 +56,12 @@ impl<'a> Heapster<'a> {
         Heapster {
             baseurl: baseurl.into(),
             client: client,
-            credentials: credentials
+            credentials: credentials,
         }
     }
 
     pub fn cluster(&self) -> Cluster {
-        Cluster {
-            heapster: self
-        }
+        Cluster { heapster: self }
     }
 
     fn get<D>(&self, uri: &str) -> Result<D>
@@ -74,7 +74,10 @@ impl<'a> Heapster<'a> {
         let url = format!("{}/api/v1/model{}", self.baseurl, uri);
         match self.credentials {
             Credentials::Basic(ref user, ref password) => {
-                self.client.request(method, &url).header(Authorization(Basic { username: user.to_owned(), password: Some(password.to_owned())}))
+                self.client.request(method, &url).header(Authorization(Basic {
+                    username: user.to_owned(),
+                    password: Some(password.to_owned()),
+                }))
             }
         }
     }
@@ -102,11 +105,7 @@ impl<'a> Heapster<'a> {
             StatusCode::UnprocessableEntity |
             StatusCode::Unauthorized |
             StatusCode::NotFound |
-            StatusCode::Forbidden => {
-                Err(Error::Fault {
-                    code: res.status
-                })
-            }
+            StatusCode::Forbidden => Err(Error::Fault { code: res.status }),
             _ => Ok(try!(serde_json::from_str::<D>(&body))),
         }
     }
@@ -115,6 +114,5 @@ impl<'a> Heapster<'a> {
 #[cfg(test)]
 mod test {
     #[test]
-    fn it_works() {
-    }
+    fn it_works() {}
 }

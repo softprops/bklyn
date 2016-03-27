@@ -14,7 +14,7 @@ pub enum Error {
     IO(IoError),
     Parse(String),
     Fault {
-        code: StatusCode
+        code: StatusCode,
     },
 }
 
@@ -25,7 +25,7 @@ impl StdError for Error {
             Error::Http(ref e) => e.description(),
             Error::IO(ref e) => e.description(),
             Error::Parse(ref e) => &e[..],
-            Error::Fault { ref code } => "..."
+            Error::Fault { ref code } => "...",
         }
     }
 
