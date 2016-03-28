@@ -1,6 +1,8 @@
 # bklyn
 
-> collect kubernetes artisanal cluster metrics from rust
+[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn)[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn)
+
+> collect artisanal kubernetes cluster metrics from rust
 
 Bklyn is a rust interface querying [heapster](https://github.com/kubernetes/heapster).
 
