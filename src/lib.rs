@@ -1,6 +1,4 @@
 #[macro_use]
-extern crate serializable_enum;
-#[macro_use]
 extern crate log;
 extern crate hyper;
 extern crate serde;

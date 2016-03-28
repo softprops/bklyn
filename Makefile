@@ -1,4 +1,10 @@
+build:
+	@cargo build
+
 example:
 	@cargo run --example metrics
 
-.PHONY: example
+test:
+	@cargo test
+
+.PHONY: build example test

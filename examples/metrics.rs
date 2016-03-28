@@ -3,16 +3,23 @@ extern crate hyper;
 
 use bklyn::{Credentials, Heapster};
 use hyper::Client;
+use std::env;
 
 fn main() {
-    let client = Client::new();
-    let heapster = Heapster::new(
-        env!("HEAPSTER_BASEURL"),
-        &client,
-        Credentials::Basic(
-            env!("HEAPSTER_USER").to_owned(),
-            env!("HEAPSTER_PASSWORD").to_owned()
-                )
-            );
-    println!("metrics {:#?}", heapster.cluster().metrics().unwrap());
+    if let (Ok(baseurl), Ok(user), Ok(password)) = (
+        env::var("HEAPSTER_BASEURL"),
+        env::var("HEAPSTER_USER"),
+        env::var("HEAPSTER_PASSWORD")
+    ) {
+        let client = Client::new();
+        let heapster = Heapster::new(
+            baseurl,
+            &client,
+            Credentials::Basic(
+                user,
+                password
+            )
+        );
+        println!("metrics {:#?}", heapster.cluster().metrics().unwrap());
+    }
 }
