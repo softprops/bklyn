@@ -150,16 +150,6 @@ impl<'a> NamespacePodContainer<'a> {
     }
 }
 
-pub struct Nodes<'a> {
-    heapster: &'a Heapster<'a>,
-}
-
-impl<'a> Nodes<'a> {
-    pub fn list(&self) -> Result<Vec<Summary>> {
-        self.heapster.get::<Vec<Summary>>("/nodes")
-    }
-}
-
 pub struct Namespaces<'a> {
     heapster: &'a Heapster<'a>,
 }
@@ -252,8 +242,8 @@ impl<'a> Heapster<'a> {
         Cluster { heapster: self }
     }
 
-    pub fn nodes(&self) -> Nodes {
-        Nodes { heapster: self }
+    pub fn nodes(&self) -> Result<Vec<Summary>> {
+        self.get::<Vec<Summary>>("/nodes")
     }
 
     pub fn node<N>(&self, name: N) -> Node
