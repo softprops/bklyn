@@ -22,10 +22,12 @@ use std::io::Read;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Credentials used for authenticating with kubernetes cluster
 pub enum Credentials {
     Basic(String, String),
 }
 
+/// A node is essentially a host within a cluster
 pub struct Node<'a> {
     name: String,
     heapster: &'a Heapster<'a>,
@@ -67,6 +69,7 @@ impl<'a> Node<'a> {
     }
 }
 
+/// Metrics associated with a container not bound to a specific pod
 pub struct FreeContainer<'a> {
     node: String,
     container: String,
@@ -98,17 +101,7 @@ impl<'a> FreeContainer<'a> {
     }
 }
 
-pub struct NamespacePods<'a> {
-    namespace: String,
-    heapster: &'a Heapster<'a>,
-}
-
-impl<'a> NamespacePods<'a> {
-    pub fn list(&self) -> Result<Vec<Summary>> {
-        self.heapster.get::<Vec<Summary>>(&format!("/namespaces/{}/pods", self.namespace))
-    }
-}
-
+/// Metrics associated with a pod within a given namespace
 pub struct NamespacePod<'a> {
     namespace: String,
     pod: String,
@@ -156,6 +149,7 @@ impl<'a> NamespacePod<'a> {
     }
 }
 
+/// Metrics associated with a container, within a pod, within a namespace
 pub struct NamespacePodContainer<'a> {
     namespace: String,
     pod: String,
@@ -191,6 +185,7 @@ impl<'a> NamespacePodContainer<'a> {
     }
 }
 
+/// Metrics within a cluster namespace
 pub struct Namespace<'a> {
     name: String,
     heapster: &'a Heapster<'a>,
@@ -213,11 +208,8 @@ impl<'a> Namespace<'a> {
         self.heapster.get::<Stats>(&format!("/namespaces/{}/stats", self.name))
     }
 
-    pub fn pods(&self) -> NamespacePods {
-        NamespacePods {
-            namespace: self.name.clone(),
-            heapster: self.heapster,
-        }
+    pub fn pods(&self) -> Result<Vec<Summary>> {
+        self.heapster.get::<Vec<Summary>>(&format!("/namespaces/{}/pods", self.name))
     }
 
     pub fn pod<N>(&self, name: N) -> NamespacePod
@@ -231,6 +223,7 @@ impl<'a> Namespace<'a> {
     }
 }
 
+/// Metrics associated with a kubernetes cluster
 pub struct Cluster<'a> {
     heapster: &'a Heapster<'a>,
 }
@@ -252,6 +245,7 @@ impl<'a> Cluster<'a> {
     }
 }
 
+/// Central interface for communicating kubernetes heapster service
 pub struct Heapster<'a> {
     baseurl: String,
     credentials: Credentials,
