@@ -31,6 +31,7 @@ pub struct Node<'a> {
 }
 
 impl<'a> Node<'a> {
+    /// list metric names defined for this node
     pub fn metrics(&self) -> Result<Vec<String>> {
         self.heapster.get::<Vec<String>>(&format!("/nodes/{}/metrics", self.name))
     }
@@ -74,6 +75,7 @@ pub struct FreeContainer<'a> {
 }
 
 impl<'a> FreeContainer<'a> {
+    /// list metric names defined for this node container
     pub fn metrics(&self) -> Result<Vec<String>> {
         self.heapster.get::<Vec<String>>(&format!("/nodes/{}/freecontainers/{}/metrics",
                                                   self.node,
@@ -189,6 +191,7 @@ pub struct Namespace<'a> {
 }
 
 impl<'a> Namespace<'a> {
+    /// list metric names defined for this namespace
     pub fn metrics(&self) -> Result<Vec<String>> {
         self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/metrics", self.name))
     }
@@ -226,25 +229,30 @@ pub struct Cluster<'a> {
 }
 
 impl<'a> Cluster<'a> {
+    /// list metric names defined for this cluster
     pub fn metrics(&self) -> Result<Vec<String>> {
         self.heapster.get::<Vec<String>>("/metrics")
     }
 
     // todo: support start/end
+    /// list metric values record at specific times for this cluster
     pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
         where M: Into<String>
     {
         self.heapster.get::<Metrics>(&format!("/metrics/{}", metric.into())).map(|m| m.metrics)
     }
 
+    /// query aggregate stats for cluster
     pub fn stats(&self) -> Result<Stats> {
         self.heapster.get::<Stats>("/stats")
     }
 
+    /// list cluster nodes
     pub fn nodes(&self) -> Result<Vec<Summary>> {
         self.heapster.get::<Vec<Summary>>("/nodes")
     }
 
+    /// return a query interface for a cluster node
     pub fn node<N>(&self, name: N) -> Node
         where N: Into<String>
     {
@@ -254,10 +262,12 @@ impl<'a> Cluster<'a> {
         }
     }
 
+    /// list cluster namespaces
     pub fn namespaces(&self) -> Result<Vec<Summary>> {
         self.heapster.get::<Vec<Summary>>("/namespaces")
     }
 
+    /// return a query interface for a cluster namespace
     pub fn namespace<N>(&self, name: N) -> Namespace
         where N: Into<String>
     {
@@ -276,6 +286,7 @@ pub struct Heapster<'a> {
 }
 
 impl<'a> Heapster<'a> {
+    /// create a new heapster instance
     pub fn new<B>(baseurl: B, client: &'a Client, credentials: Credentials) -> Heapster<'a>
         where B: Into<String>
     {
@@ -286,6 +297,7 @@ impl<'a> Heapster<'a> {
         }
     }
 
+    /// return a query interface for entire cluster
     pub fn cluster(&self) -> Cluster {
         Cluster { heapster: self }
     }
