@@ -20,9 +20,9 @@ pub struct Summary {
 
 #[derive(Debug, Deserialize)]
 pub struct Aggregate {
-    average: u64,
-    percentile: u64,
-    max: u64
+    pub average: u64,
+    pub percentile: u64,
+    pub max: u64
 }
 
 #[derive(Debug, Deserialize)]
@@ -34,6 +34,6 @@ pub struct Aggregates {
 
 #[derive(Debug, Deserialize)]
 pub struct Stats {
-    uptime: u64,
-    stats: BTreeMap<String, Aggregates>
+    pub uptime: u64,
+    pub stats: BTreeMap<String, Aggregates>
 }
