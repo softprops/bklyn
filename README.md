@@ -1,6 +1,6 @@
 # bklyn
 
-[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn)[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn)
+[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn)
 
 > collect artisanal kubernetes cluster metrics from rust
 
@@ -31,7 +31,7 @@ fn main() {
                 password
             )
         );
-        println!("metrics {:#?}", heapster.cluster().metrics().unwrap());
+        println!("metrics {:#?}", heapster.cluster().metrics());
     }
 }
 ```
