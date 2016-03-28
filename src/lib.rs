@@ -57,6 +57,99 @@ impl<'a> Node<'a> {
     }
 }
 
+pub struct NamespacePods<'a> {
+    namespace: String,
+    heapster: &'a Heapster<'a>,
+}
+
+impl<'a> NamespacePods<'a> {
+    pub fn list(&self) -> Result<Vec<Summary>> {
+        self.heapster.get::<Vec<Summary>>(&format!("/namespaces/{}/pods", self.namespace))
+    }
+}
+
+pub struct NamespacePod<'a> {
+    namespace: String,
+    pod: String,
+    heapster: &'a Heapster<'a>,
+}
+
+impl<'a> NamespacePod<'a> {
+    pub fn metrics(&self) -> Result<Vec<String>> {
+        self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/pods/{}/metrics",
+                                                  self.namespace,
+                                                  self.pod))
+    }
+
+    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+        where M: Into<String>
+    {
+        self.heapster
+            .get::<Metrics>(&format!("/namespaces/{}/pods/{}/metrics/{}",
+                                     self.namespace,
+                                     self.pod,
+                                     metric.into()))
+            .map(|m| m.metrics)
+    }
+
+    pub fn stats(&self) -> Result<Stats> {
+        self.heapster
+            .get::<Stats>(&format!("/namespaces/{}/pods/{}/stats", self.namespace, self.pod))
+    }
+
+    pub fn containers(&self) -> Result<Vec<Summary>> {
+        self.heapster.get::<Vec<Summary>>(&format!("/namespaces/{}/pods/{}/containers",
+                                                   self.namespace,
+                                                   self.pod))
+    }
+
+    pub fn container<C>(&self, container: C) -> NamespacePodContainer
+        where C: Into<String>
+    {
+        NamespacePodContainer {
+            namespace: self.namespace.clone(),
+            pod: self.pod.clone(),
+            container: container.into(),
+            heapster: self.heapster,
+        }
+    }
+}
+
+pub struct NamespacePodContainer<'a> {
+    namespace: String,
+    pod: String,
+    container: String,
+    heapster: &'a Heapster<'a>,
+}
+
+impl<'a> NamespacePodContainer<'a> {
+    pub fn metrics(&self) -> Result<Vec<String>> {
+        self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/pods/{}/containers/{}/metrics",
+                                                  self.namespace,
+                                                  self.pod,
+                                                  self.container))
+    }
+
+    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+        where M: Into<String>
+    {
+        self.heapster
+            .get::<Metrics>(&format!("/namespaces/{}/pods/{}/containers/{}/metrics/{}",
+                                     self.namespace,
+                                     self.pod,
+                                     self.container,
+                                     metric.into()))
+            .map(|m| m.metrics)
+    }
+
+    pub fn stats(&self) -> Result<Stats> {
+        self.heapster.get::<Stats>(&format!("/namespaces/{}/pods/{}/containers/{}/stats",
+                                            self.namespace,
+                                            self.pod,
+                                            self.container))
+    }
+}
+
 pub struct Nodes<'a> {
     heapster: &'a Heapster<'a>,
 }
@@ -99,8 +192,21 @@ impl<'a> Namespace<'a> {
         self.heapster.get::<Stats>(&format!("/namespaces/{}/stats", self.name))
     }
 
-    pub fn pods(&self) -> Result<Vec<Summary>> {
-        self.heapster.get::<Vec<Summary>>(&format!("/namespaces/{}/pods", self.name))
+    pub fn pods(&self) -> NamespacePods {
+        NamespacePods {
+            namespace: self.name.clone(),
+            heapster: self.heapster,
+        }
+    }
+
+    pub fn pod<N>(&self, name: N) -> NamespacePod
+        where N: Into<String>
+    {
+        NamespacePod {
+            namespace: self.name.clone(),
+            pod: name.into(),
+            heapster: self.heapster,
+        }
     }
 }
 
