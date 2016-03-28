@@ -55,6 +55,47 @@ impl<'a> Node<'a> {
     pub fn freecontainers(&self) -> Result<Vec<Summary>> {
         self.heapster.get::<Vec<Summary>>(&format!("/nodes/{}/freecontainers", self.name))
     }
+
+    pub fn freecontainer<C>(&self, container: C) -> FreeContainer
+        where C: Into<String>
+    {
+        FreeContainer {
+            node: self.name.clone(),
+            container: container.into(),
+            heapster: self.heapster,
+        }
+    }
+}
+
+pub struct FreeContainer<'a> {
+    node: String,
+    container: String,
+    heapster: &'a Heapster<'a>,
+}
+
+impl<'a> FreeContainer<'a> {
+    pub fn metrics(&self) -> Result<Vec<String>> {
+        self.heapster.get::<Vec<String>>(&format!("/nodes/{}/freecontainers/{}/metrics",
+                                                  self.node,
+                                                  self.container))
+    }
+
+    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+        where M: Into<String>
+    {
+        self.heapster
+            .get::<Metrics>(&format!("/nodes/{}/freecontainers/{}/metrics/{}",
+                                     self.node,
+                                     self.container,
+                                     metric.into()))
+            .map(|m| m.metrics)
+    }
+
+    pub fn stats(&self) -> Result<Stats> {
+        self.heapster.get::<Stats>(&format!("/nodes/{}/freecontainers/{}/stats",
+                                            self.node,
+                                            self.container))
+    }
 }
 
 pub struct NamespacePods<'a> {
@@ -147,16 +188,6 @@ impl<'a> NamespacePodContainer<'a> {
                                             self.namespace,
                                             self.pod,
                                             self.container))
-    }
-}
-
-pub struct Namespaces<'a> {
-    heapster: &'a Heapster<'a>,
-}
-
-impl<'a> Namespaces<'a> {
-    pub fn list(&self) -> Result<Vec<Summary>> {
-        self.heapster.get::<Vec<Summary>>("/namespaces")
     }
 }
 
@@ -255,8 +286,8 @@ impl<'a> Heapster<'a> {
         }
     }
 
-    pub fn namespaces(&self) -> Namespaces {
-        Namespaces { heapster: self }
+    pub fn namespaces(&self) -> Result<Vec<Summary>> {
+        self.get::<Vec<Summary>>("/namespaces")
     }
 
     pub fn namespace<N>(&self, name: N) -> Namespace
