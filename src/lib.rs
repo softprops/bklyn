@@ -4,7 +4,6 @@ extern crate hyper;
 extern crate serde;
 extern crate serde_json;
 
-
 mod rep;
 mod errors;
 
@@ -291,12 +290,6 @@ impl<'a> Heapster<'a> {
         }
     }
 
-    fn get<D>(&self, uri: &str) -> Result<D>
-        where D: Deserialize
-    {
-        self.request(Method::Get, uri, None)
-    }
-
     fn authenticate(&self, method: Method, uri: &str) -> RequestBuilder {
         let url = format!("{}/api/v1/model{}", self.baseurl, uri);
         match self.credentials {
@@ -309,20 +302,17 @@ impl<'a> Heapster<'a> {
         }
     }
 
-    fn request<D>(&self, method: Method, uri: &str, body: Option<&'a [u8]>) -> Result<D>
+    fn get<D>(&self, uri: &str) -> Result<D>
         where D: Deserialize
     {
-        let builder = self.authenticate(method, uri);
-        let mut res = try!(match body {
-            Some(ref bod) => builder.body(*bod).send(),
-            _ => builder.send(),
-        });
+        let builder = self.authenticate(Method::Get, uri);
+        let mut res = try!(builder.send());
         let mut body = match res.headers.clone().get::<ContentLength>() {
             Some(&ContentLength(len)) => String::with_capacity(len as usize),
             _ => String::new(),
         };
         try!(res.read_to_string(&mut body));
-        debug!("rev response {:#?} {:#?} {:#?}",
+        debug!("recv response {:#?} {:#?} {:#?}",
                res.status,
                res.headers,
                body);
