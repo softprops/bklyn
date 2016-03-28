@@ -1,3 +1,5 @@
+//! Bklyn is a query interface for the kubernetes cluster metric service [heapster](https://github.com/kubernetes/heapster)
+
 #[macro_use]
 extern crate log;
 extern crate hyper;
