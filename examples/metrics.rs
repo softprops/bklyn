@@ -14,5 +14,5 @@ fn main() {
             env!("HEAPSTER_PASSWORD").to_owned()
                 )
             );
-    println!("metrics {:#?}", heapster.cluster().values("cpu-usage").unwrap());
+    println!("metrics {:#?}", heapster.cluster().metrics().unwrap());
 }

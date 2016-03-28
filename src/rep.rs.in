@@ -8,3 +8,32 @@ pub struct Value {
 pub struct Metrics {
     pub metrics: Vec<Value>
 }
+
+#[derive(Debug, Deserialize)]
+pub struct Summary {
+    pub name: String,
+    #[serde(rename="cpuUsage")]
+    pub cpu_usage: u64,
+    #[serde(rename="memUsage")]
+    pub mem_usage: u64
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Aggregate {
+    average: u64,
+    percentile: u64,
+    max: u64
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Aggregates {
+    pub minute: Aggregate,
+    pub hour: Aggregate,
+    pub day: Aggregate
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Stats {
+    uptime: u64,
+    stats: BTreeMap<String, Aggregates>
+}
