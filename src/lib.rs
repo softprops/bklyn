@@ -240,6 +240,32 @@ impl<'a> Cluster<'a> {
     pub fn stats(&self) -> Result<Stats> {
         self.heapster.get::<Stats>("/stats")
     }
+
+    pub fn nodes(&self) -> Result<Vec<Summary>> {
+        self.heapster.get::<Vec<Summary>>("/nodes")
+    }
+
+    pub fn node<N>(&self, name: N) -> Node
+        where N: Into<String>
+    {
+        Node {
+            name: name.into(),
+            heapster: self.heapster,
+        }
+    }
+
+    pub fn namespaces(&self) -> Result<Vec<Summary>> {
+        self.heapster.get::<Vec<Summary>>("/namespaces")
+    }
+
+    pub fn namespace<N>(&self, name: N) -> Namespace
+        where N: Into<String>
+    {
+        Namespace {
+            name: name.into(),
+            heapster: self.heapster,
+        }
+    }
 }
 
 /// Central interface for communicating kubernetes heapster service
@@ -262,32 +288,6 @@ impl<'a> Heapster<'a> {
 
     pub fn cluster(&self) -> Cluster {
         Cluster { heapster: self }
-    }
-
-    pub fn nodes(&self) -> Result<Vec<Summary>> {
-        self.get::<Vec<Summary>>("/nodes")
-    }
-
-    pub fn node<N>(&self, name: N) -> Node
-        where N: Into<String>
-    {
-        Node {
-            name: name.into(),
-            heapster: self,
-        }
-    }
-
-    pub fn namespaces(&self) -> Result<Vec<Summary>> {
-        self.get::<Vec<Summary>>("/namespaces")
-    }
-
-    pub fn namespace<N>(&self, name: N) -> Namespace
-        where N: Into<String>
-    {
-        Namespace {
-            name: name.into(),
-            heapster: self,
-        }
     }
 
     fn authenticate(&self, method: Method, uri: &str) -> RequestBuilder {
