@@ -1,4 +1,4 @@
-//! Bklyn is a query interface for the kubernetes cluster metric service [heapster](https://github.com/kubernetes/heapster)
+//! Bklyn is a query interface for the kubernetes cluster metric service [heapster](https://github.com/kubernetes/heapster).
 
 #[macro_use]
 extern crate log;
@@ -19,6 +19,7 @@ use hyper::header::{Authorization, Basic, ContentLength};
 use hyper::status::StatusCode;
 use std::io::Read;
 
+/// Result type for bklyn query operations
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Credentials used for authenticating with kubernetes cluster

@@ -20,6 +20,6 @@ fn main() {
                 password
             )
         );
-        println!("metrics {:#?}", heapster.cluster().metrics().unwrap());
+        println!("metrics {:#?}", heapster.cluster().values("cpu-usage"));
     }
 }
