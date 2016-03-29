@@ -6,6 +6,10 @@
 
 Bklyn is a [rust](https://www.rust-lang.org/) interface querying [heapster](https://github.com/kubernetes/heapster).
 
+## api docs
+
+Find them [here](https://softprops.github.io/bklyn)
+
 ## usage
 
 ```rust
