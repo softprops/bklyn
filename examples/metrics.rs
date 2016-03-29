@@ -19,7 +19,16 @@ fn main() {
                 user,
                 password
             )
-        );
-        println!("metrics {:#?}", heapster.cluster().values("cpu-usage"));
+                );
+        if let Ok(metrics) = heapster.cluster().metrics() {
+            for metric in metrics {
+                println!(
+                    "{:#?} metrics {:#?}",
+                    metric,
+                    heapster.cluster().values(metric.clone(), &Default::default())
+                );
+            }
+        }
+
     }
 }
