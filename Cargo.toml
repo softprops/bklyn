@@ -2,6 +2,12 @@
 name = "bklyn"
 version = "0.1.0"
 authors = ["softprops <d.tangren@gmail.com>"]
+description = "Rust interface for Kubernetes Heapster metric collection"
+documentation = "https://softprops.github.io/bklyn"
+homepage = "https://github.com/softprops/bklyn"
+repository = "https://github.com/softprops/bklyn"
+keywords = ["hyper", "kubernetes", "heapster"]
+license = "MIT"
 build = "build.rs"
 
 [dev-dependencies]
