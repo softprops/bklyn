@@ -30,8 +30,17 @@ fn main() {
                 user,
                 password
             )
-        );
-        println!("metrics {:#?}", heapster.cluster().metrics());
+                );
+        if let Ok(names) = heapster.cluster().metrics().names() {
+            for metric in names {
+                println!(
+                    "{:#?} metrics {:#?}",
+                    metric,
+                    heapster.cluster().metrics().values(metric.clone(), &Default::default())
+                );
+            }
+        }
+
     }
 }
 ```

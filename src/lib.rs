@@ -48,7 +48,7 @@ pub struct MetricOptionsBuilder {
 }
 
 impl MetricOptionsBuilder {
-    // start timestamp, in RFC3339 format
+    /// start timestamp, in RFC3339 format
     pub fn start<S>(&mut self, start: S) -> &mut MetricOptionsBuilder
         where S: Into<String>
     {
@@ -84,10 +84,12 @@ pub struct Metrics<'a> {
 }
 
 impl<'a> Metrics<'a> {
+    /// query availble metric names
     pub fn names(&self) -> Result<Vec<String>> {
         self.heapster.get::<Vec<String>>(&self.uri)
     }
 
+    /// query recorded metric values
     pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
