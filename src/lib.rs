@@ -77,6 +77,30 @@ pub enum Credentials {
     Basic(String, String),
 }
 
+///  metric interface
+pub struct Metrics<'a> {
+    uri: String,
+    heapster: &'a Heapster<'a>,
+}
+
+impl<'a> Metrics<'a> {
+    pub fn names(&self) -> Result<Vec<String>> {
+        self.heapster.get::<Vec<String>>(&self.uri)
+    }
+
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
+        where M: Into<String>
+    {
+        let mut uri = vec![format!("{}/{}", self.uri, metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
+        self.heapster
+            .get::<MetricCollection>(&uri.join("?"))
+            .map(|m| m.metrics)
+    }
+}
+
 /// A node is essentially a host within a cluster
 pub struct Node<'a> {
     name: String,
@@ -84,21 +108,11 @@ pub struct Node<'a> {
 }
 
 impl<'a> Node<'a> {
-    /// list metric names defined for this node
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>(&format!("/nodes/{}/metrics", self.name))
-    }
-
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/nodes/{}/metrics/{}", self.name, metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: format!("/nodes/{}/metrics", self.name),
+            heapster: self.heapster,
         }
-        self.heapster
-            .get::<Metrics>(&uri.join("?"))
-            .map(|m| m.metrics)
     }
 
     pub fn stats(&self) -> Result<Stats> {
@@ -133,25 +147,13 @@ pub struct FreeContainer<'a> {
 
 impl<'a> FreeContainer<'a> {
     /// list metric names defined for this node container
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>(&format!("/nodes/{}/freecontainers/{}/metrics",
-                                                  self.node,
-                                                  self.container))
-    }
-
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/nodes/{}/freecontainers/{}/metrics/{}",
-                                   self.node,
-                                   self.container,
-                                   metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: format!("/nodes/{}/freecontainers/{}/metrics",
+                         self.node,
+                         self.container),
+            heapster: self.heapster,
         }
-        self.heapster
-            .get::<Metrics>(&uri.join("?"))
-            .map(|m| m.metrics)
     }
 
     pub fn stats(&self) -> Result<Stats> {
@@ -169,25 +171,11 @@ pub struct NamespacePod<'a> {
 }
 
 impl<'a> NamespacePod<'a> {
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/pods/{}/metrics",
-                                                  self.namespace,
-                                                  self.pod))
-    }
-
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/namespaces/{}/pods/{}/metrics/{}",
-                                   self.namespace,
-                                   self.pod,
-                                   metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: format!("/namespaces/{}/pods/{}/metrics", self.namespace, self.pod),
+            heapster: self.heapster,
         }
-        self.heapster
-            .get::<Metrics>(&uri.join("?"))
-            .map(|m| m.metrics)
     }
 
     pub fn stats(&self) -> Result<Stats> {
@@ -222,27 +210,14 @@ pub struct NamespacePodContainer<'a> {
 }
 
 impl<'a> NamespacePodContainer<'a> {
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/pods/{}/containers/{}/metrics",
-                                                  self.namespace,
-                                                  self.pod,
-                                                  self.container))
-    }
-
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/namespaces/{}/pods/{}/containers/{}/metrics/{}",
-                                   self.namespace,
-                                   self.pod,
-                                   self.container,
-                                   metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: format!("/namespaces/{}/pods/{}/containers/{}/metrics",
+                         self.namespace,
+                         self.pod,
+                         self.container),
+            heapster: self.heapster,
         }
-        self.heapster
-            .get::<Metrics>(&uri.join("?"))
-            .map(|m| m.metrics)
     }
 
     pub fn stats(&self) -> Result<Stats> {
@@ -261,20 +236,11 @@ pub struct Namespace<'a> {
 
 impl<'a> Namespace<'a> {
     /// list metric names defined for this namespace
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/metrics", self.name))
-    }
-
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/namespaces/{}/metrics/{}", self.name, metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: format!("/namespaces/{}/metrics", self.name),
+            heapster: self.heapster,
         }
-        self.heapster
-            .get::<Metrics>(&uri.join("?"))
-            .map(|m| m.metrics)
     }
 
     pub fn stats(&self) -> Result<Stats> {
@@ -303,20 +269,11 @@ pub struct Cluster<'a> {
 
 impl<'a> Cluster<'a> {
     /// list metric names defined for this cluster
-    pub fn metrics(&self) -> Result<Vec<String>> {
-        self.heapster.get::<Vec<String>>("/metrics")
-    }
-
-    // todo: support start/end
-    /// list metric values record at specific times for this cluster
-    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
-        where M: Into<String>
-    {
-        let mut uri = vec![format!("/metrics/{}", metric.into())];
-        if let Some(query) = options.serialize() {
-            uri.push(query)
+    pub fn metrics(&self) -> Metrics {
+        Metrics {
+            uri: "/metrics".to_owned(),
+            heapster: self.heapster,
         }
-        self.heapster.get::<Metrics>(&uri.join("?")).map(|m| m.metrics)
     }
 
     /// query aggregate stats for cluster

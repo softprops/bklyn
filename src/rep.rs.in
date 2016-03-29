@@ -5,7 +5,7 @@ pub struct Value {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Metrics {
+pub struct MetricCollection {
     pub metrics: Vec<Value>
 }
 

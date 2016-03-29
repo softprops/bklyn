@@ -20,12 +20,12 @@ fn main() {
                 password
             )
                 );
-        if let Ok(metrics) = heapster.cluster().metrics() {
-            for metric in metrics {
+        if let Ok(names) = heapster.cluster().metrics().names() {
+            for metric in names {
                 println!(
                     "{:#?} metrics {:#?}",
                     metric,
-                    heapster.cluster().values(metric.clone(), &Default::default())
+                    heapster.cluster().metrics().values(metric.clone(), &Default::default())
                 );
             }
         }
