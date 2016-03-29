@@ -48,6 +48,7 @@ pub struct MetricOptionsBuilder {
 }
 
 impl MetricOptionsBuilder {
+    // start timestamp, in RFC3339 format
     pub fn start<S>(&mut self, start: S) -> &mut MetricOptionsBuilder
         where S: Into<String>
     {
@@ -55,6 +56,7 @@ impl MetricOptionsBuilder {
         self
     }
 
+    /// end timestamp, in RFC3339 format
     pub fn end<E>(&mut self, end: E) -> &mut MetricOptionsBuilder
         where E: Into<String>
     {
