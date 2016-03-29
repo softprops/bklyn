@@ -5,19 +5,67 @@ extern crate log;
 extern crate hyper;
 extern crate serde;
 extern crate serde_json;
+extern crate url;
 
 mod rep;
 mod errors;
 
 pub use rep::*;
 pub use errors::*;
-use serde::de::Deserialize;
 use hyper::Client;
 use hyper::client::RequestBuilder;
 use hyper::method::Method;
 use hyper::header::{Authorization, Basic, ContentLength};
 use hyper::status::StatusCode;
+use serde::de::Deserialize;
+use std::collections::HashMap;
 use std::io::Read;
+use url::form_urlencoded;
+
+/// query options for fetching metric values
+#[derive(Default)]
+pub struct MetricOptions {
+    params: HashMap<&'static str, String>,
+}
+
+impl MetricOptions {
+    pub fn builder() -> MetricOptionsBuilder {
+        MetricOptionsBuilder { ..Default::default() }
+    }
+
+    pub fn serialize(&self) -> Option<String> {
+        if self.params.is_empty() {
+            None
+        } else {
+            Some(form_urlencoded::serialize(&self.params))
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct MetricOptionsBuilder {
+    params: HashMap<&'static str, String>,
+}
+
+impl MetricOptionsBuilder {
+    pub fn start<S>(&mut self, start: S) -> &mut MetricOptionsBuilder
+        where S: Into<String>
+    {
+        self.params.insert("start", start.into());
+        self
+    }
+
+    pub fn end<E>(&mut self, end: E) -> &mut MetricOptionsBuilder
+        where E: Into<String>
+    {
+        self.params.insert("end", end.into());
+        self
+    }
+
+    pub fn build(&self) -> MetricOptions {
+        MetricOptions { params: self.params.clone() }
+    }
+}
 
 /// Result type for bklyn query operations
 pub type Result<T> = std::result::Result<T, Error>;
@@ -39,11 +87,15 @@ impl<'a> Node<'a> {
         self.heapster.get::<Vec<String>>(&format!("/nodes/{}/metrics", self.name))
     }
 
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
+        let mut uri = vec![format!("/nodes/{}/metrics/{}", self.name, metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
         self.heapster
-            .get::<Metrics>(&format!("/nodes/{}/metrics/{}", self.name, metric.into()))
+            .get::<Metrics>(&uri.join("?"))
             .map(|m| m.metrics)
     }
 
@@ -85,14 +137,18 @@ impl<'a> FreeContainer<'a> {
                                                   self.container))
     }
 
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
+        let mut uri = vec![format!("/nodes/{}/freecontainers/{}/metrics/{}",
+                                   self.node,
+                                   self.container,
+                                   metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
         self.heapster
-            .get::<Metrics>(&format!("/nodes/{}/freecontainers/{}/metrics/{}",
-                                     self.node,
-                                     self.container,
-                                     metric.into()))
+            .get::<Metrics>(&uri.join("?"))
             .map(|m| m.metrics)
     }
 
@@ -117,14 +173,18 @@ impl<'a> NamespacePod<'a> {
                                                   self.pod))
     }
 
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
+        let mut uri = vec![format!("/namespaces/{}/pods/{}/metrics/{}",
+                                   self.namespace,
+                                   self.pod,
+                                   metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
         self.heapster
-            .get::<Metrics>(&format!("/namespaces/{}/pods/{}/metrics/{}",
-                                     self.namespace,
-                                     self.pod,
-                                     metric.into()))
+            .get::<Metrics>(&uri.join("?"))
             .map(|m| m.metrics)
     }
 
@@ -167,15 +227,19 @@ impl<'a> NamespacePodContainer<'a> {
                                                   self.container))
     }
 
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
+        let mut uri = vec![format!("/namespaces/{}/pods/{}/containers/{}/metrics/{}",
+                                   self.namespace,
+                                   self.pod,
+                                   self.container,
+                                   metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
         self.heapster
-            .get::<Metrics>(&format!("/namespaces/{}/pods/{}/containers/{}/metrics/{}",
-                                     self.namespace,
-                                     self.pod,
-                                     self.container,
-                                     metric.into()))
+            .get::<Metrics>(&uri.join("?"))
             .map(|m| m.metrics)
     }
 
@@ -199,11 +263,15 @@ impl<'a> Namespace<'a> {
         self.heapster.get::<Vec<String>>(&format!("/namespaces/{}/metrics", self.name))
     }
 
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
+        let mut uri = vec![format!("/namespace/{}/metrics/{}", self.name, metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
         self.heapster
-            .get::<Metrics>(&format!("/namespace/{}/metrics/{}", self.name, metric.into()))
+            .get::<Metrics>(&uri.join("?"))
             .map(|m| m.metrics)
     }
 
@@ -239,10 +307,14 @@ impl<'a> Cluster<'a> {
 
     // todo: support start/end
     /// list metric values record at specific times for this cluster
-    pub fn values<M>(&self, metric: M) -> Result<Vec<Value>>
+    pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
-        self.heapster.get::<Metrics>(&format!("/metrics/{}", metric.into())).map(|m| m.metrics)
+        let mut uri = vec![format!("/metrics/{}", metric.into())];
+        if let Some(query) = options.serialize() {
+            uri.push(query)
+        }
+        self.heapster.get::<Metrics>(&uri.join("?")).map(|m| m.metrics)
     }
 
     /// query aggregate stats for cluster
