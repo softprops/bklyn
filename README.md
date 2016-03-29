@@ -12,6 +12,18 @@ Find them [here](https://softprops.github.io/bklyn)
 
 ## usage
 
+Bklyn relies on the kubernetes heapster API to query cluster metrics. In order to do you you will need your cluster username and password as well as a url for heapster. You can resolve this url using `kubectl`
+
+After authenticating with a kubeternetes cluster, run the following
+
+```bash
+$ kubectl cluster-info
+```
+
+Inspect the output for the `Heapster` url.
+
+With those items on hand, you should be on your way with `bklyn`
+
 ```rust
 extern crate bklyn;
 extern crate hyper;
