@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn) [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE) [![crates.io](http://meritbadge.herokuapp.com/bklyn)](https://crates.io/crates/bklyn)
 
-> collect artisanal kubernetes cluster metrics from rust
+> collect artisanal [kubernetes](http://kubernetes.io/) cluster metrics from rust
 
 Bklyn is a [rust](https://www.rust-lang.org/) interface querying [heapster](https://github.com/kubernetes/heapster).
 
@@ -12,7 +12,7 @@ Find them [here](https://softprops.github.io/bklyn)
 
 ## usage
 
-Bklyn relies on the kubernetes heapster API to query cluster metrics. In order to do you you will need your cluster username and password as well as a url for heapster. You can resolve this url using `kubectl`
+Bklyn relies on the [kubernetes](http://kubernetes.io/) heapster API to query cluster metrics. In order to do so, you will need your cluster username and password as well as a url for heapster. You can resolve this url using `kubectl`
 
 After authenticating with a kubeternetes cluster, run the following
 
