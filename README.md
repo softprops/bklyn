@@ -1,6 +1,6 @@
 # bklyn
 
-[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn) [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![Build Status](https://travis-ci.org/softprops/bklyn.svg?branch=master)](https://travis-ci.org/softprops/bklyn) [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE) [![crates.io](http://meritbadge.herokuapp.com/bklyn)](https://crates.io/crates/bklyn)
 
 > collect artisanal kubernetes cluster metrics from rust
 
