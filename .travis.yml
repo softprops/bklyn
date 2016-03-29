@@ -1,29 +1,42 @@
 sudo: false
-
 language: rust
-
 matrix:
   fast_finish: true
   include:
   - rust: nightly
   - rust: beta
   - rust: stable
-
 script:
 - cargo build
 - cargo test
-
 cache:
   apt: true
   directories:
   - target/debug/deps
   - target/debug/build
-
 addons:
   apt:
     packages:
     - libcurl4-openssl-dev
     - libelf-dev
     - libdw-dev
-    - binutils-dev # required for `kcov --verify`
-    - libbfd-dev # required for `kcov --verify`
+    - binutils-dev
+    - libbfd-dev
+
+after_success: |
+  [ $TRAVIS_RUST_VERSION = stable ] &&
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  cargo doc --no-deps &&
+  echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
+  pip install --user ghp-import &&
+  /home/travis/.local/bin/ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages &&
+  wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+  tar xzf master.tar.gz && mkdir kcov-master/build && cd kcov-master/build && cmake .. && make && make install DESTDIR=../tmp && cd ../.. &&
+  ls target/debug &&
+  ./kcov-master/tmp/usr/local/bin/kcov --verify --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov target/debug/bklyn-*
+
+env:
+  global:
+    secure: u20mzolOmUzpWw9EoazI6vJfEirkLn6xzIL62FTYl6jSrrY3Mfo39au9PwY+bReb4v1JX4Cn7U5V48gXhGFgFOyqdm0aPDQ9NJe0ezY+8j7ylvR6gJrG4krg8ITt88bAHjO88Qnz/xjXD7zplwogrYzElVNNS72pKg8G3ne0SixzAVCKvPU9nZCkmruV/P2mc4kD+d58gRNRKZrDNqUZUrg5GyiooxAooCMroZzQUMhkQ2s+pRk9bxaT3irdGT3E5pFAxCIn+3VqTUbpd3cCRNWSIESnpvumNYW+nDCulCW8Z8FALpuYGCrsLw8i9aqWgD/EmfIHuw+1KEFEvDReNZ3QE3eSg5HWhUk8+G8IJeobZMOT1gJBmAExtNCuC1Fc3YIKemha8Veb4y2VlNpNku9vCyVyVk6Y5U135Jm/BqJa7ruspUYwFHOchiSP9U6rbDVODwt84qdCz3p7oi2Z4Cn2PEiMglF1vOxWis79A7qZ2AnZ6OoFr9SPeCKb5MmVpV3lUfYEaQAfZMJUiV81R+PeOqqOyiqXy7Faho/DZdCtyj79pZR6rWHPAsy07y9fMqPB6Lc1PPIywZ5JhvTQ3sfWMCtDYm/MZ+P55LaJQGIyPiu3xRFPwp33aquPi2gCz/qMf9yrE9QE/NoBbS47x+hN9Fn4e7EkDN19IbJjaK8=
