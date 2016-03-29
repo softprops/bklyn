@@ -266,7 +266,7 @@ impl<'a> Namespace<'a> {
     pub fn values<M>(&self, metric: M, options: &MetricOptions) -> Result<Vec<Value>>
         where M: Into<String>
     {
-        let mut uri = vec![format!("/namespace/{}/metrics/{}", self.name, metric.into())];
+        let mut uri = vec![format!("/namespaces/{}/metrics/{}", self.name, metric.into())];
         if let Some(query) = options.serialize() {
             uri.push(query)
         }
