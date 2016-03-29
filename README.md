@@ -4,7 +4,7 @@
 
 > collect artisanal kubernetes cluster metrics from rust
 
-Bklyn is a rust interface querying [heapster](https://github.com/kubernetes/heapster).
+Bklyn is a [rust](https://www.rust-lang.org/) interface querying [heapster](https://github.com/kubernetes/heapster).
 
 ## usage
 
@@ -30,7 +30,7 @@ fn main() {
                 user,
                 password
             )
-                );
+        );
         if let Ok(names) = heapster.cluster().metrics().names() {
             for metric in names {
                 println!(
